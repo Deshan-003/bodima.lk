@@ -8,6 +8,7 @@ import {
   Info,
   MapPin,
   MessageCircle,
+  Phone,
   Snowflake,
   UtensilsCrossed,
   Users,
@@ -15,6 +16,9 @@ import {
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ChatPanel from "../components/ChatPanel";
+import ReviewsSection from "../components/ReviewsSection";
+import { useAuth } from "../context/AuthContext";
 import { LISTINGS } from "../data/listings";
 
 const FACILITY_ICONS: Record<string, typeof Wifi> = {
@@ -35,6 +39,11 @@ export default function PropertyDetails() {
   const listing = LISTINGS.find((l) => l.id === Number(id));
   const [photoIndex, setPhotoIndex] = useState(0);
   const [favorite, setFavorite] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const { user } = useAuth();
+  const isSeeker = user?.role === "seeker";
+  const ownerName = "Kamal Perera";
+  const ownerPhone = "+94 77 234 5678";
 
   if (!listing) {
     return (
@@ -141,6 +150,12 @@ export default function PropertyDetails() {
                   })}
                 </div>
               </div>
+
+              <ReviewsSection
+                listingId={listing.id}
+                canReview={isSeeker}
+                userName={user?.name}
+              />
             </div>
 
             {/* Right: booking card */}
@@ -177,12 +192,31 @@ export default function PropertyDetails() {
                 </div>
               </div>
 
+              {isSeeker && (
+                <div className="mt-7 rounded-xl bg-lav p-4">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-night/50">
+                    House Owner
+                  </p>
+                  <p className="mt-1 text-[16px] font-extrabold text-night">
+                    {ownerName}
+                  </p>
+                  <a
+                    href={`tel:${ownerPhone.replace(/\s/g, "")}`}
+                    className="mt-2 flex items-center gap-2 text-[16px] font-extrabold text-primary-700 hover:underline"
+                  >
+                    <Phone size={17} strokeWidth={2.4} />
+                    {ownerPhone}
+                  </a>
+                </div>
+              )}
+
               <button
                 type="button"
-                className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-xl bg-accent px-6 py-4 text-[16px] font-extrabold text-night shadow-cta transition hover:bg-accent-dark"
+                onClick={() => setChatOpen(true)}
+                className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-xl bg-accent px-6 py-4 text-[16px] font-extrabold text-night shadow-cta transition hover:bg-accent-dark"
               >
                 <MessageCircle size={20} strokeWidth={2.5} />
-                Contact Owner
+                {isSeeker ? "Chat with Owner" : "Contact Owner"}
               </button>
 
               <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-lav p-4 text-[13px] font-medium leading-relaxed text-night/70">
@@ -208,6 +242,12 @@ export default function PropertyDetails() {
       </main>
 
       <Footer />
+
+      <ChatPanel
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        ownerName={ownerName}
+      />
     </>
   );
 }
