@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, LogOut, UserCircle2 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  UserCircle2,
+} from "lucide-react";
 import Logo from "./Logo";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,6 +22,7 @@ export default function Header() {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="relative z-30 mx-3 mt-3 rounded-2xl bg-white shadow-card">
@@ -86,6 +93,30 @@ export default function Header() {
                 <p className="mt-3 rounded-lg bg-lav px-3 py-2 text-[12px] font-bold capitalize text-primary-700">
                   Signed in as {user.role}
                 </p>
+                {user.role === "owner" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/dashboard");
+                    }}
+                    className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[14px] font-bold text-night/70 transition hover:bg-lav hover:text-night"
+                  >
+                    <LayoutDashboard size={17} strokeWidth={2.4} />
+                    Dashboard
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/chats");
+                  }}
+                  className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[14px] font-bold text-night/70 transition hover:bg-lav hover:text-night"
+                >
+                  <MessageCircle size={17} strokeWidth={2.4} />
+                  My Chats
+                </button>
                 <button
                   type="button"
                   onClick={() => {
