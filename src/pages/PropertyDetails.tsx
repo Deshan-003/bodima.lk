@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   Car,
   ChevronRight,
@@ -36,10 +36,11 @@ const DEFAULT_DESCRIPTION = (location: string, facilities: string[]) =>
 /** Property details page — gallery, description, facilities and booking card */
 export default function PropertyDetails() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const listing = LISTINGS.find((l) => l.id === Number(id));
   const [photoIndex, setPhotoIndex] = useState(0);
   const [favorite, setFavorite] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(searchParams.get("chat") === "1");
   const { user } = useAuth();
   const isSeeker = user?.role === "seeker";
   const ownerName = "Kamal Perera";
@@ -244,9 +245,12 @@ export default function PropertyDetails() {
       <Footer />
 
       <ChatPanel
+        key={listing.id}
         open={chatOpen}
         onClose={() => setChatOpen(false)}
         ownerName={ownerName}
+        listingId={listing.id}
+        listingTitle={listing.title}
       />
     </>
   );

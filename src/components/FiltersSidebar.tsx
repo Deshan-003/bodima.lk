@@ -1,7 +1,10 @@
 import { Check, ChevronDown } from "lucide-react";
+import { DISTRICTS, townsFor } from "../data/locations";
 
 export type Filters = {
   district: string;
+  town: string;
+  propertyType: string;
   min: number;
   max: number;
   types: string[];
@@ -10,21 +13,15 @@ export type Filters = {
 
 export const INITIAL_FILTERS: Filters = {
   district: "All Districts",
+  town: "All Towns",
+  propertyType: "Any Type",
   min: 0,
   max: 50000,
   types: [],
   facilities: [],
 };
 
-const DISTRICTS = [
-  "All Districts",
-  "Colombo",
-  "Gampaha",
-  "Kandy",
-  "Galle",
-  "Negombo",
-  "Kalutara",
-];
+const PROPERTY_TYPES = ["Any Type", "Annex", "Room", "House", "Apartment"];
 
 const BOARDING_TYPES = ["Male", "Female", "Any"];
 const FACILITIES = ["Wi-Fi", "AC", "Parking", "Meals"];
@@ -85,6 +82,7 @@ export default function FiltersSidebar({
   onReset: () => void;
 }) {
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
+  const towns = townsFor(filters.district);
   const priceLabel = `Rs. ${filters.min.toLocaleString()} - ${
     filters.max >= 50000 ? "50,000+" : filters.max.toLocaleString()
   }`;
@@ -95,19 +93,65 @@ export default function FiltersSidebar({
         Filters
       </h2>
 
-      {/* Location */}
+      {/* Location: district then its towns */}
       <div className="space-y-3">
         <SectionLabel>Location</SectionLabel>
         <div className="relative">
           <select
             aria-label="District"
             value={filters.district}
-            onChange={(e) => set({ district: e.target.value })}
+            onChange={(e) =>
+              set({ district: e.target.value, town: "All Towns" })
+            }
             className="h-12 w-full cursor-pointer appearance-none rounded-xl border border-primary-100 bg-white pl-4 pr-10 text-[15px] font-semibold text-night focus:outline-none"
           >
             {DISTRICTS.map((d) => (
               <option key={d} value={d}>
                 {d}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            strokeWidth={2.75}
+            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-night"
+          />
+        </div>
+        <div className="relative">
+          <select
+            aria-label="Town"
+            value={filters.town}
+            onChange={(e) => set({ town: e.target.value })}
+            className="h-12 w-full cursor-pointer appearance-none rounded-xl border border-primary-100 bg-white pl-4 pr-10 text-[15px] font-semibold text-night focus:outline-none"
+          >
+            <option value="All Towns">All Towns</option>
+            {towns.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            strokeWidth={2.75}
+            className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-night"
+          />
+        </div>
+      </div>
+
+      {/* Property type */}
+      <div className="space-y-3">
+        <SectionLabel>Property Type</SectionLabel>
+        <div className="relative">
+          <select
+            aria-label="Property type filter"
+            value={filters.propertyType}
+            onChange={(e) => set({ propertyType: e.target.value })}
+            className="h-12 w-full cursor-pointer appearance-none rounded-xl border border-primary-100 bg-white pl-4 pr-10 text-[15px] font-semibold text-night focus:outline-none"
+          >
+            {PROPERTY_TYPES.map((p) => (
+              <option key={p} value={p}>
+                {p}
               </option>
             ))}
           </select>
