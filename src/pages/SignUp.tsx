@@ -108,7 +108,9 @@ export default function SignUp() {
             e.preventDefault();
             signIn({ name: fullName.trim() || "Bodima User", email, role });
             setSubmitted(true);
-            navigate("/browse", { replace: true });
+            navigate(role === "owner" ? "/dashboard" : "/browse", {
+              replace: true,
+            });
           }}
         >
           {FIELDS.map((field) => {

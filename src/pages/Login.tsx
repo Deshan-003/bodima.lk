@@ -86,7 +86,9 @@ export default function Login() {
               role,
             });
             setSubmitted(true);
-            navigate("/browse", { replace: true });
+            navigate(role === "owner" ? "/dashboard" : "/browse", {
+              replace: true,
+            });
           }}
         >
           {FIELDS.map((field) => {
