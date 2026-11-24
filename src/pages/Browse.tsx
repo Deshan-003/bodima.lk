@@ -24,6 +24,15 @@ function matchesFilters(listing: Listing, f: Filters): boolean {
   if (f.district !== "All Districts" && listing.district !== f.district) {
     return false;
   }
+  if (f.town !== "All Towns" && listing.town !== f.town) {
+    return false;
+  }
+  if (
+    f.propertyType !== "Any Type" &&
+    listing.boardingType !== f.propertyType
+  ) {
+    return false;
+  }
   if (listing.price < f.min || listing.price > f.max) {
     return false;
   }
