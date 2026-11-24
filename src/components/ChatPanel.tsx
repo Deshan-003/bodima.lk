@@ -1,32 +1,49 @@
-import { useState } from "react";
-import { Send, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { History, Send, X } from "lucide-react";
+import { getThread, saveThread, type ChatMessage } from "../data/chats";
 
-type Message = { from: "owner" | "me"; text: string };
+const GREETING = (): ChatMessage => ({
+  from: "owner",
+  text: "Hi! Thanks for your interest in the boarding place. How can I help?",
+  at: Date.now(),
+});
 
-/** Simple mock chat with the property owner */
+/** Chat with the property owner — messages persist so they can be reopened */
 export default function ChatPanel({
   open,
   onClose,
   ownerName,
+  listingId,
+  listingTitle,
 }: {
   open: boolean;
   onClose: () => void;
   ownerName: string;
+  listingId: number;
+  listingTitle: string;
 }) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      from: "owner",
-      text: "Hi! Thanks for your interest in the boarding place. How can I help?",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => getThread(listingId)?.messages ?? [GREETING()],
+  );
   const [draft, setDraft] = useState("");
+
+  useEffect(() => {
+    saveThread({
+      listingId,
+      listingTitle,
+      ownerName,
+      messages,
+      updatedAt: Date.now(),
+    });
+  }, [messages, listingId, listingTitle, ownerName]);
 
   if (!open) return null;
 
   const send = () => {
     const text = draft.trim();
     if (!text) return;
-    setMessages((prev) => [...prev, { from: "me", text }]);
+    setMessages((prev) => [...prev, { from: "me", text, at: Date.now() }]);
     setDraft("");
     window.setTimeout(() => {
       setMessages((prev) => [
@@ -34,6 +51,7 @@ export default function ChatPanel({
         {
           from: "owner",
           text: "Thanks for your message! I'll get back to you shortly.",
+          at: Date.now(),
         },
       ]);
     }, 700);
@@ -59,6 +77,14 @@ export default function ChatPanel({
               Online now
             </p>
           </div>
+          <Link
+            to="/chats"
+            aria-label="All chats"
+            title="All chats"
+            className="grid h-9 w-9 place-items-center rounded-lg text-night/50 transition hover:bg-lav hover:text-night"
+          >
+            <History size={19} strokeWidth={2.3} />
+          </Link>
           <button
             type="button"
             aria-label="Close chat"
