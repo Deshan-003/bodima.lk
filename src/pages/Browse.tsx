@@ -8,7 +8,8 @@ import FiltersSidebar, {
   type Filters,
 } from "../components/FiltersSidebar";
 import ListingCard from "../components/ListingCard";
-import { LISTINGS, type Listing } from "../data/listings";
+import type { Listing } from "../data/listings";
+import { useListings } from "../data/listingsStore";
 
 const PER_PAGE = 6;
 
@@ -57,14 +58,15 @@ function sortListings(listings: Listing[], sort: SortOption): Listing[] {
 
 /** Browse page — purple search hero, filters sidebar, listing grid, pagination */
 export default function Browse() {
+  const { listings } = useListings();
   const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
   const [applied, setApplied] = useState<Filters>(INITIAL_FILTERS);
   const [sort, setSort] = useState<SortOption>("Most Recent");
   const [page, setPage] = useState(1);
 
   const results = useMemo(
-    () => sortListings(LISTINGS.filter((l) => matchesFilters(l, applied)), sort),
-    [applied, sort],
+    () => sortListings(listings.filter((l) => matchesFilters(l, applied)), sort),
+    [listings, applied, sort],
   );
   const pageCount = Math.max(1, Math.ceil(results.length / PER_PAGE));
   const current = Math.min(page, pageCount);
