@@ -41,6 +41,8 @@ export const LISTINGS: Listing[] = [
     badges: ["Available", "Verified"],
     boardingType: "Annex",
     occupancy: "1 person",
+    bathroom: "Attached",
+    keyMoney: { months: 2, amount: 36000 },
     description:
       "A comfortable and well-maintained boarding space in the heart of Colombo 07. Conveniently located close to universities, colleges, and public transport. The room is fully furnished with essential amenities, making it ideal for students and young professionals looking for a hassle-free stay.",
     gallery: [
@@ -62,6 +64,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Wi-Fi", "AC"],
     boardingType: "Room",
     occupancy: "1 person",
+    bathroom: "Common",
+    keyMoney: { months: 1, amount: 15000 },
   },
   {
     id: 3,
@@ -75,6 +79,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Wi-Fi", "Parking"],
     boardingType: "Annex",
     occupancy: "2 persons",
+    bathroom: "Attached",
+    keyMoney: { months: 3, amount: 60000 },
   },
   {
     id: 4,
@@ -88,6 +94,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Wi-Fi", "Meals"],
     boardingType: "Room",
     occupancy: "1 person",
+    bathroom: "Common",
+    keyMoney: { months: 1, amount: 12000 },
   },
   {
     id: 5,
@@ -101,6 +109,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Wi-Fi", "AC", "Meals"],
     boardingType: "Annex",
     occupancy: "1 person",
+    bathroom: "Attached",
+    keyMoney: { months: 2, amount: 34000 },
   },
   {
     id: 6,
@@ -114,6 +124,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Parking", "Meals"],
     boardingType: "Room",
     occupancy: "2 persons",
+    bathroom: "Common",
+    keyMoney: { months: 1, amount: 14000 },
   },
   {
     id: 7,
@@ -127,6 +139,8 @@ export const LISTINGS: Listing[] = [
     facilities: ["Wi-Fi", "AC"],
     boardingType: "Annex",
     occupancy: "1 person",
+    bathroom: "Attached",
+    keyMoney: { months: 2, amount: 32000 },
   },
   {
     id: 8,
