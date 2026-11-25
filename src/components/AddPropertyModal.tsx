@@ -1,39 +1,39 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { DISTRICTS, townsFor } from "../data/locations";
+import type { BathroomType, Listing } from "../data/listings";
 
-export type NewProperty = {
-  id: number;
-  title: string;
-  img: string;
-  price: number;
-  district: string;
-  town: string;
-  views: number;
-  description?: string;
-};
-
-const FACILITIES = ["WiFi", "AC", "Parking", "Meals"];
+const FACILITIES = ["Wi-Fi", "AC", "Parking", "Meals"];
 const PROPERTY_TYPES = ["Room", "Annex", "House", "Apartment"];
+const BOARDING_TYPES = ["Any", "Male", "Female"];
+const BATHROOM_TYPES: BathroomType[] = ["Attached", "Common"];
 
 /** Add Property dialog styled from the reference mockup */
 export default function AddPropertyModal({
   open,
   onClose,
   onPublish,
+  initial,
 }: {
   open: boolean;
   onClose: () => void;
-  onPublish: (property: NewProperty) => void;
+  onPublish: (property: Listing) => void;
+  /** When editing an existing post, prefill the form and skip re-flagging as new. */
+  initial?: Listing | null;
 }) {
-  const [title, setTitle] = useState("");
-  const [district, setDistrict] = useState("All Districts");
-  const [town, setTown] = useState("All Towns");
-  const [price, setPrice] = useState("");
-  const [propertyType, setPropertyType] = useState("Room");
-  const [description, setDescription] = useState("");
-  const [facilities, setFacilities] = useState<string[]>(["WiFi"]);
-  const [photo, setPhoto] = useState("");
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [district, setDistrict] = useState(initial?.district ?? "All Districts");
+  const [town, setTown] = useState(initial?.town ?? "All Towns");
+  const [price, setPrice] = useState(initial ? String(initial.price) : "");
+  const [propertyType, setPropertyType] = useState(initial?.boardingType ?? "Room");
+  const [boardingType, setBoardingType] = useState(initial?.type ?? "Any");
+  const [bathroom, setBathroom] = useState<BathroomType>(initial?.bathroom ?? "Attached");
+  const [keyMoneyMonths, setKeyMoneyMonths] = useState(
+    initial ? String(initial.keyMoney?.months ?? 0) : "",
+  );
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [facilities, setFacilities] = useState<string[]>(initial?.facilities ?? ["Wi-Fi"]);
+  const [photo, setPhoto] = useState(initial?.img ?? "");
 
   if (!open) return null;
 
@@ -43,26 +43,38 @@ export default function AddPropertyModal({
     setTown("All Towns");
     setPrice("");
     setPropertyType("Room");
+    setBoardingType("Any");
+    setBathroom("Attached");
+    setKeyMoneyMonths("");
     setDescription("");
-    setFacilities(["WiFi"]);
+    setFacilities(["Wi-Fi"]);
     setPhoto("");
   };
 
   const publish = () => {
     if (!title.trim() || !price) return;
+    const monthlyRent = Number(price);
+    const months = Math.max(0, Number(keyMoneyMonths) || 0);
     onPublish({
-      id: Date.now(),
+      id: initial?.id ?? Date.now() + Math.floor(Math.random() * 1000),
       title: title.trim(),
+      location: town,
+      district,
+      town,
+      price: monthlyRent,
       img:
         photo ||
         ["/assets/listing-colombo.jpg", "/assets/listing-kandy.jpg"][
           Math.floor(Math.random() * 2)
         ],
-      price: Number(price),
-      district,
-      town,
-      views: 0,
+      type: boardingType,
+      boardingType: propertyType,
+      occupancy: "1 person",
+      facilities,
       description: description.trim(),
+      bathroom,
+      keyMoney: { months, amount: months * monthlyRent },
+      isNew: !initial,
     });
     reset();
     onClose();
@@ -84,10 +96,11 @@ export default function AddPropertyModal({
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-[24px] font-extrabold tracking-tight text-night">
-              Add New Property
+              {initial ? "Edit Property" : "Create New Post"}
             </h2>
             <p className="mt-1 text-[13px] font-medium text-night/55">
-              Fill in the details to list your boarding place.
+              Fill in the details to list your boarding place. New posts appear
+              instantly for seekers on Browse.
             </p>
           </div>
           <button
@@ -181,6 +194,63 @@ export default function AddPropertyModal({
             </select>
           </div>
 
+          <div>
+            <label htmlFor="ap-boarding" className={labelClass}>
+              Boarding Type
+            </label>
+            <select
+              id="ap-boarding"
+              value={boardingType}
+              onChange={(e) => setBoardingType(e.target.value as "Any" | "Male" | "Female")}
+              className={`${fieldClass} cursor-pointer`}
+            >
+              {BOARDING_TYPES.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="ap-bathroom" className={labelClass}>
+              Bathroom
+            </label>
+            <select
+              id="ap-bathroom"
+              value={bathroom}
+              onChange={(e) => setBathroom(e.target.value as BathroomType)}
+              className={`${fieldClass} cursor-pointer`}
+            >
+              {BATHROOM_TYPES.map((b) => (
+                <option key={b} value={b}>
+                  {b === "Attached" ? "Attached Bathroom" : "Common Bathroom"}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="sm:col-span-2 rounded-xl border border-primary-100 bg-white p-4">
+            <label htmlFor="ap-keymoney" className={labelClass}>
+              Key Money (months of rent)
+            </label>
+            <div className="mt-2 flex items-center gap-3">
+              <input
+                id="ap-keymoney"
+                type="number"
+                min={0}
+                max={36}
+                value={keyMoneyMonths}
+                onChange={(e) => setKeyMoneyMonths(e.target.value)}
+                placeholder="e.g. 3"
+                className="h-11 w-28 rounded-xl border border-primary-100 px-4 text-[14px] font-medium text-night placeholder:text-night/35 focus:border-primary-600 focus:outline-none"
+              />
+              <span className="text-[14px] font-semibold text-night/60">
+                {keyMoneyMonths && price
+                  ? `= Rs. ${(Math.max(0, Number(keyMoneyMonths) || 0) * Number(price)).toLocaleString()} total`
+                  : "How many months' rent as key money?"}
+              </span>
+            </div>
+          </div>
+
           <div className="sm:col-span-2">
             <label htmlFor="ap-description" className={labelClass}>
               Description
@@ -249,7 +319,7 @@ export default function AddPropertyModal({
             disabled={!title.trim() || !price}
             className="ml-auto rounded-xl bg-primary-700 px-7 py-3 text-[14px] font-extrabold text-white shadow-cta transition enabled:hover:bg-primary-800 disabled:opacity-40"
           >
-            Publish Property
+            {initial ? "Save Changes" : "Publish Post"}
           </button>
         </div>
       </div>
