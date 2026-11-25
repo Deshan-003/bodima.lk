@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
+  Bath,
   Car,
   ChevronRight,
+  Droplets,
   Heart,
   Home,
   Info,
+  KeyRound,
   MapPin,
   MessageCircle,
   Phone,
   Snowflake,
+  Sparkles,
   UtensilsCrossed,
   Users,
   Wifi,
@@ -19,7 +23,7 @@ import Footer from "../components/Footer";
 import ChatPanel from "../components/ChatPanel";
 import ReviewsSection from "../components/ReviewsSection";
 import { useAuth } from "../context/AuthContext";
-import { LISTINGS } from "../data/listings";
+import { useListings } from "../data/listingsStore";
 
 const FACILITY_ICONS: Record<string, typeof Wifi> = {
   "Wi-Fi": Wifi,
@@ -37,7 +41,8 @@ const DEFAULT_DESCRIPTION = (location: string, facilities: string[]) =>
 export default function PropertyDetails() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const listing = LISTINGS.find((l) => l.id === Number(id));
+  const { listings } = useListings();
+  const listing = listings.find((l) => l.id === Number(id));
   const [photoIndex, setPhotoIndex] = useState(0);
   const [favorite, setFavorite] = useState(false);
   const [chatOpen, setChatOpen] = useState(searchParams.get("chat") === "1");
@@ -177,6 +182,35 @@ export default function PropertyDetails() {
                   Available
                 </span>
               </div>
+
+              {listing.isNew && (
+                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary-100 px-3 py-1 text-[12px] font-extrabold text-primary-700">
+                  <Sparkles size={13} strokeWidth={2.6} /> New Post
+                </span>
+              )}
+
+              {(listing.bathroom || listing.keyMoney) && (
+                <div className="mt-4 grid gap-2 rounded-xl bg-lav p-4">
+                  {listing.bathroom && (
+                    <div className="flex items-center gap-2 text-[14px] font-bold text-night">
+                      {listing.bathroom === "Attached" ? (
+                        <Bath size={17} strokeWidth={2.4} className="text-primary-600" />
+                      ) : (
+                        <Droplets size={17} strokeWidth={2.4} className="text-primary-600" />
+                      )}
+                      {listing.bathroom} Bathroom
+                    </div>
+                  )}
+                  {listing.keyMoney && (
+                    <div className="flex items-center gap-2 text-[14px] font-bold text-night">
+                      <KeyRound size={17} strokeWidth={2.4} className="text-primary-600" />
+                      Key Money: {listing.keyMoney.months} month
+                      {listing.keyMoney.months !== 1 ? "s" : ""} rent · Rs.{" "}
+                      {listing.keyMoney.amount.toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="mt-6 space-y-4 border-t border-primary-100 pt-6">
                 <div className="flex items-center gap-3 text-[15px] font-semibold text-night/75">
