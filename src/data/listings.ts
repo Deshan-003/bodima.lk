@@ -1,3 +1,11 @@
+export type BathroomType = "Attached" | "Common";
+
+/** Key money is quoted as a number of months' rent plus the calculated rupee amount. */
+export type KeyMoney = {
+  months: number;
+  amount: number;
+};
+
 export type Listing = {
   id: number;
   title: string;
@@ -13,6 +21,10 @@ export type Listing = {
   occupancy?: string;
   description?: string;
   gallery?: string[];
+  bathroom?: BathroomType;
+  keyMoney?: KeyMoney;
+  /** Marks a freshly published owner post so seekers can spot it. */
+  isNew?: boolean;
 };
 
 export const LISTINGS: Listing[] = [
