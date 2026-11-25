@@ -29,8 +29,20 @@ check + Vite bundle), preview: `npm run preview`.
 | `/browse` | Listings with cascading district/town, price, type and facility filters, sorting, pagination |
 | `/browse/:id` | Property details — photo gallery, facilities, reviews, owner contact and chat |
 | `/chats` | Saved chat threads (`?chat=1` on a details page opens a thread) |
-| `/dashboard` | Owner dashboard — listing stats, property table, add-property modal |
+| `/dashboard` | Owner dashboard — stats, property table, create/edit/delete posts |
 | `/login`, `/register` | Seeker/owner authentication demo |
+
+### Owner posts
+
+From `/dashboard`, an owner creates a **New Post** by entering the property
+title, district/town, monthly rent, boarding type, **bathroom (attached or
+common)**, **key money in months of rent** (the form shows the rupee total),
+facilities and a description. Publishing adds the post live to the shared
+listing store (`bodima.listings.v1` in `localStorage`), so it appears at the
+top of `/browse` with a **New Post** badge immediately — no admin approval step.
+Edit and Delete on a dashboard row update or remove the post on Browse and the
+details page too. Seeker cards and the booking card show the bathroom type and
+the quoted key money (e.g. "Key Money: 3 months · Rs. 75,000").
 | `/about`, `/contact` | Placeholder pages |
 
 ## Admin Panel
