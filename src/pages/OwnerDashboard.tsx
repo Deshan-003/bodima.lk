@@ -20,46 +20,8 @@ import {
 import Logo from "../components/Logo";
 import AddPropertyModal from "../components/AddPropertyModal";
 import { useAuth } from "../context/AuthContext";
-
-type OwnedProperty = {
-  id: number;
-  title: string;
-  img: string;
-  price: number;
-  district: string;
-  town: string;
-  views: number;
-};
-
-const INITIAL_PROPERTIES: OwnedProperty[] = [
-  {
-    id: 1,
-    title: "Spacious Boarding in Colombo 07",
-    img: "/assets/listing-colombo.jpg",
-    price: 18000,
-    district: "Colombo",
-    town: "Colombo 07",
-    views: 245,
-  },
-  {
-    id: 2,
-    title: "Modern Room in Kandy",
-    img: "/assets/listing-kandy.jpg",
-    price: 20000,
-    district: "Kandy",
-    town: "Kandy",
-    views: 189,
-  },
-  {
-    id: 3,
-    title: "Comfortable Annex in Gampaha",
-    img: "/assets/listing-gampaha.jpg",
-    price: 15000,
-    district: "Gampaha",
-    town: "Gampaha",
-    views: 156,
-  },
-];
+import { useListings } from "../data/listingsStore";
+import type { Listing } from "../data/listings";
 
 const STATS = [
   { label: "Total Listings", value: "05", icon: Building2 },
@@ -80,9 +42,41 @@ const NAV = [
 export default function OwnerDashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [properties, setProperties] = useState(INITIAL_PROPERTIES);
+  const { listings, publishListing, updateListing, removeListing } = useListings();
+  // The owner's table is the same shared catalogue seekers browse, so newly
+  // published posts remain visible here after navigating away and back.
+  const properties = listings;
   const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Listing | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handlePublish = (property: Listing) => {
+    if (editing) {
+      updateListing(property);
+      setSuccessMessage("Property updated successfully!");
+    } else {
+      publishListing(property);
+      setSuccessMessage("New post published! Seekers can now find it on Browse.");
+    }
+    setEditing(null);
+    setSuccess(true);
+    window.setTimeout(() => setSuccess(false), 3500);
+  };
+
+  const openAdd = () => {
+    setEditing(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (property: Listing) => {
+    setEditing(property);
+    setModalOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    removeListing(id);
+  };
 
   return (
     <div className="flex min-h-screen bg-page font-sans">
@@ -195,15 +189,15 @@ export default function OwnerDashboard() {
 
         <button
           type="button"
-          onClick={() => setModalOpen(true)}
+          onClick={openAdd}
           className="mt-6 flex items-center gap-2 rounded-xl bg-primary-700 px-6 py-3.5 text-[15px] font-extrabold text-white shadow-cta transition hover:bg-primary-800"
         >
-          <Plus size={19} strokeWidth={2.6} /> Add New Property
+          <Plus size={19} strokeWidth={2.6} /> Create New Post
         </button>
 
         {success && (
           <p className="mt-4 rounded-xl bg-[#DFF2E4] px-4 py-3 text-[14px] font-bold text-[#1F7A3D]">
-            Property uploaded successfully!
+            {successMessage}
           </p>
         )}
 
@@ -237,11 +231,12 @@ export default function OwnerDashboard() {
             </Link>
           </div>
           <div className="overflow-x-auto px-2 py-2">
-            <table className="w-full min-w-[620px] text-left">
+            <table className="w-full min-w-[720px] text-left">
               <thead>
                 <tr className="text-[11px] font-extrabold uppercase tracking-wider text-night/45">
                   <th className="px-4 py-3">Property</th>
                   <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Bathroom / Key Money</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Views</th>
                   <th className="px-4 py-3">Actions</th>
@@ -269,19 +264,34 @@ export default function OwnerDashboard() {
                       Rs. {p.price.toLocaleString()}
                       <span className="block text-[12px] font-medium text-night/45">/month</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-[#DFF2E4] px-3 py-1 text-[12px] font-bold text-[#1F7A3D]">
-                        Active
+                    <td className="px-4 py-3 text-[12px] font-semibold text-night/70">
+                      <span>{p.bathroom ?? "—"} bathroom</span>
+                      <span className="block text-night/50">
+                        {p.keyMoney
+                          ? `${p.keyMoney.months} month(s) key money`
+                          : "No key money"}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      {p.isNew ? (
+                        <span className="rounded-full bg-primary-100 px-3 py-1 text-[12px] font-bold text-primary-700">
+                          New Post
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-[#DFF2E4] px-3 py-1 text-[12px] font-bold text-[#1F7A3D]">
+                          Active
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-[14px] font-semibold text-night/70">
-                      {p.views}
+                      0
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button
                           type="button"
                           aria-label={`Edit ${p.title}`}
+                          onClick={() => openEdit(p)}
                           className="grid h-8 w-8 place-items-center rounded-lg bg-lav text-primary-700 hover:bg-primary-100"
                         >
                           <Pencil size={15} strokeWidth={2.3} />
@@ -289,9 +299,7 @@ export default function OwnerDashboard() {
                         <button
                           type="button"
                           aria-label={`Delete ${p.title}`}
-                          onClick={() =>
-                            setProperties((prev) => prev.filter((x) => x.id !== p.id))
-                          }
+                          onClick={() => handleDelete(p.id)}
                           className="grid h-8 w-8 place-items-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
                         >
                           <Trash2 size={15} strokeWidth={2.3} />
@@ -302,8 +310,8 @@ export default function OwnerDashboard() {
                 ))}
                 {properties.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-[14px] font-semibold text-night/55">
-                      No properties yet — add one to get started.
+                    <td colSpan={6} className="px-4 py-10 text-center text-[14px] font-semibold text-night/55">
+                      No properties yet — create a new post to get started.
                     </td>
                   </tr>
                 )}
@@ -314,13 +322,14 @@ export default function OwnerDashboard() {
       </main>
 
       <AddPropertyModal
+        key={editing?.id ?? "new"}
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onPublish={(property) => {
-          setProperties((prev) => [property, ...prev]);
-          setSuccess(true);
-          window.setTimeout(() => setSuccess(false), 3500);
+        onClose={() => {
+          setModalOpen(false);
+          setEditing(null);
         }}
+        initial={editing}
+        onPublish={handlePublish}
       />
     </div>
   );
